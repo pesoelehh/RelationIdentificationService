@@ -1,0 +1,77 @@
+package rules
+
+import dataelementhub.relation.model.dataElement.compact.DataElementSummary
+import dataelementhub.relation.model.scoredElement.ScoredElements
+
+// ==========================
+// Globals
+// ==========================
+// "leftElement" will be set from Java: kieSession.setGlobal("leftElement", a);
+
+global DataElementSummary leftElement;
+
+// ==========================
+// VALUE DOMAIN TYPE FILTERS (EQUIVALENT only)
+// ==========================
+
+// BOOLEAN can only match BOOLEAN
+rule "Filter Boolean incompatible types"
+when
+    $relationType : String( this == "EQUIVALENT" )
+    $a : DataElementSummary( this == leftElement, valueDomainType == "BOOLEAN" )
+    $b : DataElementSummary( this != $a,
+                             valueDomainType != "BOOLEAN" )
+then
+    System.out.println("Retracting (BOOLEAN rule): " + $b);
+    retract($b);
+end
+
+// DATE can only match DATE or STRING
+rule "Filter Date incompatible types"
+when
+    $relationType : String( this == "EQUIVALENT" )
+    $a : DataElementSummary( this == leftElement, valueDomainType == "DATE" )
+    $b : DataElementSummary( this != $a,
+                             !(valueDomainType == "DATE" || valueDomainType == "STRING") )
+then
+    System.out.println("Retracting (DATE rule): " + $b);
+    retract($b);
+end
+
+// INTEGER can only match INTEGER, DECIMAL, or STRING
+rule "Filter Integer incompatible types"
+when
+    $relationType : String( this == "EQUIVALENT" )
+    $a : DataElementSummary( this == leftElement, valueDomainType == "INTEGER" )
+    $b : DataElementSummary( this != $a,
+                             !(valueDomainType == "INTEGER"
+                               || valueDomainType == "DECIMAL"
+                               || valueDomainType == "STRING") )
+then
+    System.out.println("Retracting (INTEGER rule): " + $b);
+    retract($b);
+end
+
+// STRING is compatible with anything except BOOLEAN
+rule "Filter String incompatible types"
+when
+    $relationType : String( this == "EQUIVALENT" )
+    $a : DataElementSummary( this == leftElement, valueDomainType == "STRING" )
+    $b : DataElementSummary( this != $a,
+                             valueDomainType == "BOOLEAN" )
+then
+    System.out.println("Retracting (STRING rule): " + $b);
+    retract($b);
+end
+
+// ==========================
+// SCORE FILTER FOR EQUIVALENT
+// ==========================
+rule "Filter Equivalent low score"
+when
+    $relationType : String( this == "EQUIVALENT" )
+    se : ScoredElements( score < 0.5 )
+then
+    System.out.println("Retracting (LOW SCORE): " + se);
+    retract(se);
+end
