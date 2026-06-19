@@ -1,3 +1,39 @@
+"""
+NLP Relation Scoring Engine
+
+This module implements the core business logic for semantic relation analysis
+between reference and candidate designations/definitions.
+
+The process consists of two stages:
+
+1. SBERT Similarity Scoring
+   - Generates embeddings for designations, definitions, and combined text.
+   - Computes cosine similarity scores using Sentence-BERT.
+   - Produces a weighted similarity score used for candidate ranking.
+
+2. NLI Relation Classification
+   - Selects the most relevant candidates based on similarity thresholds
+     and Top-K ranking.
+   - Uses a Natural Language Inference (NLI) model to classify semantic
+     relationships between reference and candidate texts.
+   - Identifies whether a candidate is broader, more specific, related,
+     or unrelated to the reference term.
+
+Key Features:
+- One-to-many relation analysis.
+- Many-to-many relation analysis.
+- Top-K candidate filtering.
+- Similarity-based candidate selection.
+- SBERT embedding generation and cosine similarity scoring.
+- NLI-based semantic relation classification.
+
+This module serves as the primary processing layer used by the FastAPI
+endpoints exposed by the NLP Relation API.
+
+Author: Gabriel Nathanael da Gomez
+Email: gabrieldagomez@gmail.com
+"""
+
 from app.nlp_method.sbert_model.emb_main import embed_sbert, sbert_model
 from app.nlp_method.nli_model import nli_function
 from fastapi.concurrency import run_in_threadpool
