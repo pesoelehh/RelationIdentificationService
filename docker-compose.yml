@@ -2,12 +2,12 @@ version: '3.9'
 
 services:
   fastapi:
-    build: ai-service
+    build: AI-service
     container_name: fastapi-app
     ports:
       - "8000:8000"
     env_file:
-      - ai-service/.env
+      - AI-service/.env
     environment:
       - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN}
     depends_on:
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   springboot:
-    build: AI-BasedRecommendationTool
+    build: Main-Service
     container_name: springboot-app
     ports:
       - "8081:8081"
@@ -35,7 +35,7 @@ services:
       - start-dev
       - --import-realm
     env_file:
-      - ai-service/.env
+      - AI-service/.env
     ports:
       - "8080:8080"
     environment:

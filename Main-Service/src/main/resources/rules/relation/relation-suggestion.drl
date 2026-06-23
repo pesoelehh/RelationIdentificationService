@@ -1,0 +1,192 @@
+package rules
+
+import dataelementhub.relation.model.scoredElement.RelationSuggestion
+
+rule "Exact match"
+agenda-group "relation"
+salience 100
+when
+    $s : RelationSuggestion(
+        relationType == null,
+        relationAnalysisResult.similarityScore >= 0.95,
+        comparisonResult.datatypeCompatibility == comparisonResult.datatypeCompatibility.EXACT,
+        comparisonResult.attributesMatch == true,
+        comparisonResult.unitMatch == true,
+        isSameLanguage() == true
+    )
+then
+    $s.setRelationType("exact_match");
+    update($s);
+end
+
+rule "Unrelated due to NLI"
+agenda-group "relation"
+salience 95
+when
+    $s : RelationSuggestion(
+        relationType == null,
+        relationAnalysisResult.nliRelation == "unrelated"
+    )
+then
+    $s.setRelationType("unrelated");
+    update($s);
+end
+
+
+rule "Close match compatible datatype"
+agenda-group "relation"
+salience 90
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore >= 0.85,
+
+        comparisonResult.datatypeCompatibility
+            != comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("close_match");
+    update($s);
+end
+
+
+rule "Related match high similarity incompatible datatype"
+agenda-group "relation"
+salience 80
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore >= 0.85,
+
+        comparisonResult.datatypeCompatibility
+            == comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("related_match");
+    update($s);
+end
+
+
+rule "Narrow match"
+agenda-group "relation"
+salience 70
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore >= 0.60,
+
+        relationAnalysisResult.nliRelation == "specific",
+
+        comparisonResult.datatypeCompatibility
+            != comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("narrow_match");
+    update($s);
+end
+
+
+rule "Broad match"
+agenda-group "relation"
+salience 70
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore >= 0.60,
+
+        relationAnalysisResult.nliRelation == "wider",
+
+        comparisonResult.datatypeCompatibility
+            != comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("broad_match");
+    update($s);
+end
+
+
+rule "Related match medium similarity"
+agenda-group "relation"
+salience 50
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore >= 0.60,
+        relationAnalysisResult.similarityScore < 0.85,
+
+        comparisonResult.datatypeCompatibility
+            != comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("related_match");
+    update($s);
+end
+
+rule "Related match medium similarity incompatible datatype"
+agenda-group "relation"
+salience 45
+when
+    $s : RelationSuggestion(
+        relationType == null,
+        relationAnalysisResult.similarityScore >= 0.60,
+        relationAnalysisResult.similarityScore < 0.85,
+        comparisonResult.datatypeCompatibility
+            == comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("related_match");
+    update($s);
+end
+
+
+rule "Related match uncertain NLI"
+agenda-group "relation"
+salience 40
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore >= 0.85,
+
+        relationAnalysisResult.nliRelation == "unknown",
+
+        comparisonResult.datatypeCompatibility
+            != comparisonResult.datatypeCompatibility.INCOMPATIBLE
+    )
+then
+    $s.setRelationType("related_match");
+    update($s);
+end
+
+
+rule "Unrelated low similarity"
+agenda-group "relation"
+salience 10
+when
+    $s : RelationSuggestion(
+        relationType == null,
+
+        relationAnalysisResult.similarityScore < 0.60
+    )
+then
+    $s.setRelationType("unrelated");
+    update($s);
+end
+
+
+rule "Fallback unrelated"
+agenda-group "relation"
+salience 0
+when
+    $s : RelationSuggestion(
+        relationType == null
+    )
+then
+    $s.setRelationType("unrelated");
+    update($s);
+end
