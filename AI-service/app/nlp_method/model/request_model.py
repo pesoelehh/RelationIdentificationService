@@ -16,7 +16,7 @@ Author: Gabriel Nathanael da Gomez
 Email: gabrieldagomez@gmail.com
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List
 
 class TextItem(BaseModel):
@@ -58,16 +58,14 @@ class SimilarityRequest(BaseModel):
                Candidate items to be compared against the reference item(s).
    """
     # Single reference item used for one-to-many comparisons.
-    text1: TextItem = None
+    text1: TextItem | None = None
+
     # Multiple reference items used for many-to-many comparisons.
-    text1_list: List[TextItem] = None
+    text1_list: List[TextItem] | None = None
+
     # Candidate items that will be compared against the reference items.
     text2_list: List[TextItem] = Field(..., alias="text2_list")
-    class Config:
-        """
-           Pydantic model configuration.
 
-           Allows field population using either the field name or its alias.
-       """
-
-    validate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
