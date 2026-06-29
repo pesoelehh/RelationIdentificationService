@@ -2,14 +2,12 @@ version: '3.9'
 
 services:
   fastapi:
-    build: ai-service
+    build: AI-service
     container_name: fastapi-app
     ports:
       - "8000:8000"
     env_file:
-      - ai-service/.env
-    environment:
-      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN}
+      - .env
     depends_on:
       - keycloak
     volumes:
@@ -17,15 +15,19 @@ services:
     restart: unless-stopped
 
   springboot:
-    build: AI-BasedRecommendationTool
+    build: Main-Service
     container_name: springboot-app
+    env_file:
+      - .env
     ports:
       - "8081:8081"
     environment:
-      - KEYCLOAK_URL=http://keycloak:8080
-      - AI_SERVICE_URL=http://fastapi:8000
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - AI_SERVICE_URL=${AI_SERVICE_URL}
+      - RESTPROJECT_BASEURL=${RESTPROJECT_BASEURL}
     depends_on:
       - keycloak
+      - fastapi
     restart: unless-stopped
 
   keycloak:
@@ -33,17 +35,15 @@ services:
     container_name: keycloak
     command:
       - start-dev
-      - --import-realm
+      # Uncomment only after placing a realm export in keycloak/import
+      # - --import-realm
     env_file:
-      - ai-service/.env
+      - .env
     ports:
       - "8080:8080"
     environment:
       - KEYCLOAK_ADMIN=${KEYCLOAK_USER}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_PASSWORD}
-    volumes:
-      - C:/Users/gabri/Keycloak/keycloak-26.3.1/keycloak-26.3.1/data:/opt/keycloak/data
-      - C:/Users/gabri/Keycloak/import:/opt/keycloak/data/import
+    # volumes:
+    #   - ./keycloak/import:/opt/keycloak/data/import
     restart: unless-stopped
-
-
